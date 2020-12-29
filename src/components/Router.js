@@ -3,9 +3,7 @@ import { HashRouter as Router, Route, Switch } from "react-router-dom";
 import Auth from "../routes/Auth";
 import Home from "../routes/Home";
 
-const AppRouter = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false); //true -> 로그인 성공, false -> 인증단계
-  // useState는 react에서 받아온다. 위는 hooks 이다.
+const AppRouter = ({isLoggedIn}) => {
   return (
     <Router>
       <Switch>
