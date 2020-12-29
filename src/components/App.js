@@ -1,13 +1,25 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import AppRouter from "components/Router";
 import {authService} from "fbase";
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(authService.currentUser); 
-  //true -> 로그인 성공, false -> 인증단계
-  // useState는 react에서 받아온다. 위는 hooks 이다.
+  const [init,setInit] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false); 
+
+  //useEffect 사용 하지 않을시에 firebase의 db를 동기화 시키기도 전에
+  // const [isLoggedIn, setIsLoggedIn] 값을 인식한다. 이것이 아래 함수를 쓴 이유다
+  useEffect( () => {
+    authService.onAuthStateChanged((user) =>{
+      if(user) {
+        setIsLoggedIn(true);
+      } else {
+        setIsLoggedIn(false);
+      }
+      setInit(true);
+    })
+  } , []) // useEffect는 동기화라고 생각하자. 마운트,언마운트,props값 업데이트시 사용 됨.
   return (
   <>
-  <AppRouter isLoggedIn={isLoggedIn}/>
+  {init ? <AppRouter isLoggedIn={isLoggedIn}/> : "initializing..."}
   <footer>&copy; {new Date().getFullYear()} Twitter</footer>
   </>
   );
