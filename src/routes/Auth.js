@@ -1,10 +1,11 @@
-import { authService } from "fbase";
+import { authService, firebaseInstance } from "fbase";
 import React, { useState } from "react";
 const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [newAccount, setNewAccount] = useState(true);
   const [error, setError] = useState("");
+  const [socialLoginError, setSocialLoginError] = useState("");
   const onChange = (event) => {
     const {
       target: { name, value },
@@ -29,14 +30,29 @@ const Auth = () => {
       } else {
         data = await authService.signInWithEmailAndPassword(email, password);
       }
-      console.log(data);
     } catch (error) {
       setError(error.message);
     }
   };
   const toggleAccount = () => {
-    setNewAccount((prev) => !prev);
-  }
+    setNewAccount(() => !newAccount);
+  };
+  const socialLogin = async (event) => {
+    const {
+      target: { name },
+    } = event;
+    let provider;
+    if (name === "google") {
+      provider = new firebaseInstance.auth.GoogleAuthProvider();
+    } else {
+      provider = new firebaseInstance.auth.GithubAuthProvider();
+    }
+    try {
+      await authService.signInWithPopup(provider);
+    }catch(error){
+      setSocialLoginError(error.message);
+    }
+  };
   return (
     <div>
       <form onSubmit={onSubmit}>
@@ -56,15 +72,23 @@ const Auth = () => {
           value={password}
           onChange={onChange}
         />
-        <input type="submit" value={newAccount ? "Create Account" : "sign In"} />
+        <input
+          type="submit"
+          value={newAccount ? "Create Account" : "sign In"}
+        />
         {error}
       </form>
-      <span onClick = {toggleAccount}>
+      <span onClick={toggleAccount}>
         <button>{newAccount ? "Sign in" : "Create Account"}</button>
       </span>
       <div>
-        <button>Continue with Google</button>
-        <button>Continue with Github</button>
+        <button onClick={socialLogin} name="google">
+          Continue with Google
+        </button>
+        <button onClick={socialLogin} name="github">
+          Continue with Github
+        </button>
+        {socialLoginError}
       </div>
     </div>
   );
