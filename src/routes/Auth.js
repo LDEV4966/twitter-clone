@@ -17,18 +17,17 @@ const Auth = () => {
     }
   };
   const onSubmit = async (event) => {
-    let data;
     event.preventDefault();
     try {
       if (newAccount) {
         //create account
         // 두 method 모두 Promise 로 반환이기에 await를 사용해야함.
-        data = await authService.createUserWithEmailAndPassword(
+        await authService.createUserWithEmailAndPassword(
           email,
           password
         );
       } else {
-        data = await authService.signInWithEmailAndPassword(email, password);
+        await authService.signInWithEmailAndPassword(email, password);
       }
     } catch (error) {
       setError(error.message);
@@ -49,7 +48,7 @@ const Auth = () => {
     }
     try {
       await authService.signInWithPopup(provider);
-    }catch(error){
+    } catch (error) {
       setSocialLoginError(error.message);
     }
   };

@@ -1,16 +1,11 @@
 import { dbService } from "fbase";
 import React, { useEffect, useState } from "react";
-import { useHistory } from "react-router-dom";
-
 const Home = ({ userObj }) => {
-  const [cnt, setCnt] = useState(0); //Re rendering cnt
   const [tweet, setTweet] = useState("");
   const [tweets, setTweets] = useState([]);
-  const history = useHistory();
-
+  /* setTweets을 할 때마다 re-rendering 을 해주는 옛날 방식이다. 
   const getTweets = async () => {
     let dbTweets = await dbService.collection("tweet").get();
-    setCnt(cnt + 1);
     setTweets([]);
     dbTweets.forEach((document) => {
       const tweetObject = {
@@ -20,18 +15,27 @@ const Home = ({ userObj }) => {
       setTweets((prev) => [tweetObject, ...prev]);
     });
   };
+  */
   useEffect(() => {
-    getTweets();
+    // getTweets(); for each를 써서 firestore에 있는 정보를 끌어오는 방식이다. 이를 onSnapshot으로 대체 해 보겠음.
+
+    // onSnapshot : read,delete,update등 다양한 db의 변화를 감지함
+    dbService.collection("tweet").onSnapshot((snapShot) => {
+      const tweetArray = snapShot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setTweets(tweetArray);
+    });
   }, []);
   const onSubmit = async (event) => {
     event.preventDefault();
-    const data = await dbService.collection("tweet").add({
+    await dbService.collection("tweet").add({
       text: tweet,
       createdAt: Date.now(),
       creatorId: userObj.uid,
     });
     setTweet("");
-    getTweets();
   };
   const onChange = (event) => {
     const {
@@ -39,7 +43,6 @@ const Home = ({ userObj }) => {
     } = event;
     setTweet(value);
   };
-  console.log(tweets);
   return (
     <div>
       <form onSubmit={onSubmit}>
@@ -54,12 +57,11 @@ const Home = ({ userObj }) => {
       </form>
       <div>
         {tweets.map((tweet) => (
-          <div>
+          <div key={tweet.id}>
             <h4>{tweet.text} </h4>
           </div>
         ))}
       </div>
-      <span>rendering : {cnt} times..</span>
     </div>
   );
 };
