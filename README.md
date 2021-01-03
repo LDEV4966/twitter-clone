@@ -1,4 +1,4 @@
-## Create Twitter-clone with `React hook` 
+## Create Twitter-clone with `React hooks` 
 
 This project was bootstrapped with Create React App.
 
