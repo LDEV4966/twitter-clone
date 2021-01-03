@@ -1,5 +1,6 @@
 import { dbService } from "fbase";
 import React, { useEffect, useState } from "react";
+import Tweet from "components/Tweet";
 const Home = ({ userObj }) => {
   const [tweet, setTweet] = useState("");
   const [tweets, setTweets] = useState([]);
@@ -18,9 +19,9 @@ const Home = ({ userObj }) => {
   */
   useEffect(() => {
     // getTweets(); for each를 써서 firestore에 있는 정보를 끌어오는 방식이다. 이를 onSnapshot으로 대체 해 보겠음.
-
     // onSnapshot : read,delete,update등 다양한 db의 변화를 감지함
     dbService.collection("tweet").onSnapshot((snapShot) => {
+      //() => () 이렇게 된다면 ()안의 값이 return값입니다.
       const tweetArray = snapShot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
@@ -56,10 +57,8 @@ const Home = ({ userObj }) => {
         <input type="submit" value="Tweet" />
       </form>
       <div>
-        {tweets.map((tweet) => (
-          <div key={tweet.id}>
-            <h4>{tweet.text} </h4>
-          </div>
+        {tweets.map((tweet) =>(
+          <Tweet tweetObj = {tweet} key = {tweet.id} isOwner = { (tweet.creatorId === userObj.uid) ? true : false}/>
         ))}
       </div>
     </div>
