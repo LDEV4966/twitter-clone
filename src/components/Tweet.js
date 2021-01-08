@@ -6,7 +6,6 @@ const Tweet = ({ tweetObj, isOwner }) => {
   const [newTweet, setNewTweet] = useState(tweetObj.text);
   const isDelete = async () => {
     const ok = window.confirm("Are you sure, you want to delete the tweet ?");
-    console.log(ok);
     if (ok) {
       await dbService.doc(`tweet/${tweetObj.id}`).delete(); //해당 doc의 id를 path 값으로 가지기에 이를 이용하여 삭제.
     }
