@@ -1,23 +1,11 @@
-import { dbService } from "fbase";
+import { dbService, storageService } from "fbase";
 import React, { useEffect, useState } from "react";
+import { v4 as uuid4 } from "uuid";
 import Tweet from "components/Tweet";
 const Home = ({ userObj }) => {
   const [tweet, setTweet] = useState("");
   const [tweets, setTweets] = useState([]);
-  const [attachment, setAttachment] = useState(null);
-  /* setTweets을 할 때마다 re-rendering 을 해주는 옛날 방식이다. 
-  const getTweets = async () => {
-    let dbTweets = await dbService.collection("tweet").get();
-    setTweets([]);
-    dbTweets.forEach((document) => {
-      const tweetObject = {
-        ...document.data(),
-        id: document.id,
-      };
-      setTweets((prev) => [tweetObject, ...prev]);
-    });
-  };
-  */
+  const [attachment, setAttachment] = useState("");
   useEffect(() => {
     // getTweets(); for each를 써서 firestore에 있는 정보를 끌어오는 방식이다. 이를 onSnapshot으로 대체 해 보겠음.
     // onSnapshot : read,delete,update등 다양한 db의 변화를 감지함
@@ -32,12 +20,23 @@ const Home = ({ userObj }) => {
   }, []);
   const onSubmit = async (event) => {
     event.preventDefault();
-    await dbService.collection("tweet").add({
+    let attachmentUrl = "";
+    if (attachment !== "") {
+      const attachmentRef = storageService
+        .ref()
+        .child(`${userObj.uid}/${uuid4()}`);
+      const response = await attachmentRef.putString(attachment, "data_url");
+      attachmentUrl = await response.ref.getDownloadURL();
+    }
+    const tweetObj = {
       text: tweet,
       createdAt: Date.now(),
       creatorId: userObj.uid,
-    });
+      attachmentUrl,
+    };
+    await dbService.collection("tweet").add(tweetObj);
     setTweet("");
+    setAttachment("");
   };
   const onChange = (event) => {
     const {
@@ -59,7 +58,7 @@ const Home = ({ userObj }) => {
     };
     reader.readAsDataURL(theFile);
   };
-  const onClearAttachment = () => setAttachment(null);
+  const onClearAttachment = () => setAttachment("");
   return (
     <div>
       <form onSubmit={onSubmit}>

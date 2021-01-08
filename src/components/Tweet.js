@@ -1,4 +1,4 @@
-import { dbService } from "fbase";
+import { dbService, storageService } from "fbase";
 import React, { useState } from "react";
 
 const Tweet = ({ tweetObj, isOwner }) => {
@@ -8,6 +8,9 @@ const Tweet = ({ tweetObj, isOwner }) => {
     const ok = window.confirm("Are you sure, you want to delete the tweet ?");
     if (ok) {
       await dbService.doc(`tweet/${tweetObj.id}`).delete(); //해당 doc의 id를 path 값으로 가지기에 이를 이용하여 삭제.
+      if (tweetObj.attachmentUrl !== "") {
+        await storageService.refFromURL(tweetObj.attachmentUrl).delete();
+      }
     }
   };
   const toggleEditing = () => setEditing((prev) => !prev);
@@ -43,6 +46,14 @@ const Tweet = ({ tweetObj, isOwner }) => {
   ) : (
     <div>
       <h4>{tweetObj.text} </h4>
+      {tweetObj.attachmentUrl && (
+        <img
+          src={tweetObj.attachmentUrl}
+          width="50px"
+          height="50px"
+          alt={tweetObj.text}
+        />
+      )}
       {isOwner && (
         <>
           <div>
